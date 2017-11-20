@@ -148,15 +148,16 @@ uint32_t virtual_page_address;
 uint32_t cache_offset;
 uint32_t virtual_page_number;
 uint32_t physical_page_num;
-uint32_t g_num_cache_index_bits;
+uint32_t num_cache_index_bits;
 
 uint32_t cache_size;
 uint32_t physical_page_address;
 uint32_t physical_tag;
 uint32_t physical_offset;
 uint32_t physical_index;
+uint32_t physical_page_num;
+uint32_t pysical_index;
 
-}
 
 
 
@@ -247,13 +248,16 @@ int main(int argc, char** argv) {
     * Use the following snippet and add your code to finish the task. */
 
     /* You may want to setup your TLB and/or Cache structure here. */////////////////////////////////////////////////////////////////////////////
-    struct cacheSim{
+    struct cacheSim {
         uint32_t tag;
-    }
+    };
     //struct cacheSim *theCache = malloc(number_of_cache_blocks * sizeof(uint32_t));
+    // struct cacheSim theCache = (struct cacheSim) malloc(sizeof (struct cacheSim));
+    // struct cacheSim theCache;
+    //struct cacheSim *theCache = malloc(sizeof (struct cacheSim));
 
-    struct cacheSim *theCache = malloc(sizeof (struct cacheSim));
-
+    struct cacheSim *theCache;
+    theCache= malloc(number_of_cache_blocks*sizeof(struct cacheSim));
 
 
 
@@ -287,39 +291,29 @@ int main(int argc, char** argv) {
 
             if(page_size == 256){
                 g_total_num_virtual_pages = 16777216;
-                virtual_page_address = access.address & 0xFFFFFF00                //page address will be 24bits
-                cache_offset = access.address & 0x000000FF                //offset will be 8bits at the end of the address,
+                virtual_page_address = access.address & 0xFFFFFF00;                //page address will be 24bits
+                cache_offset = access.address & 0x000000FF;                //offset will be 8bits at the end of the address,
 
                 virtual_page_number = virtual_page_address >> 2;
-                physical_page_num = dummy_translate_virtual_page_num(page_number);
+                physical_page_num = dummy_translate_virtual_page_num(virtual_page_number);
 
 
 
             }
             if(page_size == 4096){
                 g_total_num_virtual_pages = 1048576;
-                virtual_page_address = access.address & 0xFFFFF000                //page address 20 bits
-                cache_offset = access.address & 0x00000FFF                //offset will be 12 bits
+                virtual_page_address = access.address & 0xFFFFF000;                //page address 20 bits
+                cache_offset = access.address & 0x00000FFF;               //offset will be 12 bits
 
                 virtual_page_number = virtual_page_address >> 3;
-                physical_page_num = dummy_translate_virtual_page_num(page_number);
+                physical_page_num = dummy_translate_virtual_page_num(virtual_page_number);
 
                 physical_page_address = (physical_page_num << 3 ) | cache_offset;
             }
             //now got physcial address
             //need to convert to cache to then find out
 
-
-
-
-
-            ///////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
+///////////////////////////////////////////////////////////////////////////////////////////////
             num_cache_index_bits = log2(number_of_cache_blocks);
             g_cache_offset_bits = log2(cache_block_size);
 
@@ -330,29 +324,22 @@ int main(int argc, char** argv) {
             physical_tag =  physical_page_address >> (32 - g_num_cache_tag_bits);
             physical_index = (physical_page_address << (g_num_cache_tag_bits)) >> (32 - num_cache_index_bits);
 
+//theCache[0].tag = 1;
 
-
-            if(theCache[pysical_index] == physical_tag){
+            if(theCache[physical_index].tag== physical_tag){
 
                 g_result.cache_data_hits++;
 
             }else{
-                theCache[pysical_index] == physical_tag;
+                theCache[physical_index].tag = physical_tag;
+
                 g_result.cache_data_misses++;
+
             }
 
 
-
-
-
-
-
-
-
-
-
-
         }
+      }
 
         /* Do not modify code below. */
         /* Make sure that all the parameters are appropriately populated. */
